@@ -9,6 +9,6 @@ import school.hei.demo.entity.ImageSubmission;
 @Repository
 public interface ImageSubmissionRepository extends JpaRepository<ImageSubmission, UUID> {
 
-    @Override
-    List<ImageSubmission> findAll();
+  @Override
+  List<ImageSubmission> findAll();
 }
