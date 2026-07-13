@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Image Submission API
+  description: >
+    API de soumission d'images. Un utilisateur envoie une image (jpeg ou png) accompagnée
+    d'un email. L'enregistrement (id, nom du fichier, email) est fait de façon synchrone.
+    Une conversion de l'image en noir et blanc puis l'envoi d'un email avec un lien de
+    téléchargement S3 sont faits de façon asynchrone (EventBridge -> SQS -> Lambda).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Serveur local de développement
+
+tags:
+  - name: images
+    description: Soumission et consultation des images
+
+paths:
+  /images:
+    post:
+      tags:
+        - images
+      summary: Soumettre une image
+      description: |
+        Accepte un fichier image (image/jpeg ou image/png) et l'email du destinataire.
+        Enregistre de façon synchrone une ligne (id, nom du fichier, email).
+        Déclenche de façon asynchrone la conversion en noir et blanc de l'image et
+        l'envoi d'un email contenant un lien S3 présigné vers le résultat.
+      operationId: submitImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - email
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image au format jpeg ou png
+                email:
+                  type: string
+                  format: email
+                  description: Adresse email du destinataire du lien de l'image en noir et blanc
+      responses:
+        '201':
+          description: Image soumise et enregistrée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSubmission'
+        '400':
+          description: >
+            Requête invalide (format de fichier non accepté, contenu ne correspondant pas
+            au type déclaré, ou email invalide).
+
+    get:
+      tags:
+        - images
+      summary: Lister toutes les images soumises
+      operationId: findAllImages
+      responses:
+        '200':
+          description: Liste de toutes les images soumises.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageSubmission'
+
+components:
+  schemas:
+    ImageSubmission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        fileName:
+          type: string
+          example: "photo-vacances.jpg"
+        email:
+          type: string
+          format: email
+          example: "utilisateur@example.com"
