@@ -109,6 +109,8 @@ jacocoTestReport {
 }
 
 dependencies {
+    implementation 'org.postgresql:postgresql:42.7.3'
+
     implementation 'org.springframework.boot:spring-boot-starter-web:3.2.2'
     testImplementation 'org.testcontainers:testcontainers:2.0.2'
 
